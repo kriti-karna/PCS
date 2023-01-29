@@ -1,0 +1,315 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    var qualifications = ViewData["Qualifications"] as IEnumerable<Qualification>;
+    var employees = ViewData["Employee"] as IEnumerable<Employee>;
+}
+
+<style>
+    table {
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: darkgrey;
+        color: white;
+        font-size: 18px;
+    }
+
+    button {
+        margin: 5px;
+    }
+
+    .input-box{
+        margin-top: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee Id</th>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var item in employees)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.EmpName</td>
+                            <td>
+                                <button class="btn btn-primary" type="button" onclick="editModal(@(item.Id))">Edit</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-8">
+            <form method="post" asp-action="AddEmployee">
+                <div class="col-12 input-box">
+                    <label>Name*</label>&nbsp;&nbsp;&nbsp;
+                    <input type="text" name="EmpName" required class="form-control" />
+                </div>
+                <div class="col-12" style="display: flex;">
+                    <label>Gender*</label>&nbsp;&nbsp;&nbsp;
+                    <input type="radio" name="Gender" value="Male" required /> Male &nbsp;
+                    <input type="radio" name="Gender" value="Female" required /> Female &nbsp;
+                    <input type="radio" name="Gender" value="Third Gender" required /> Third Gender
+                </div>
+                <div class="col-12 input-box">
+                    <label>DOB*</label>&nbsp;&nbsp;&nbsp;
+                    <input name="DobDate" type="date" class="form-control" max="@(DateTime.Now.ToString("yyyy-MM-dd"))" required />
+                </div>
+                <div class="col-12 input-box">
+                    <label>Salary</label>&nbsp;&nbsp;&nbsp;
+                    <input name="Salary" type="number" class="form-control" />
+                </div><br />
+                <div style="border: 1px solid black; padding: 5px; border-radius: 5px;">
+                    <h3>Employee Qualification</h3>
+                    <div style="display: flex; justify-content:center;" class="input-box">
+                        <label>Qualification</label>&nbsp;&nbsp;&nbsp;
+                        <select name="Qualificaion" class="form-control" id="qualification1">
+                            <option value="-1" hidden>Select Qualification</option>
+                            @foreach (var item in qualifications)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>&nbsp;&nbsp;&nbsp;
+                        <label>Marks*</label>&nbsp;&nbsp;&nbsp;
+                        <input type="number" class="form-control" id="marks1" />
+                        <button type="button" class="btn btn-secondary" onclick="insertQual(1);">Add</button>
+                    </div>
+                    <table id="qual_table1">
+                        <thead>
+                            <tr>
+                                <th>QID</th>
+                                <th>Qualification Name</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="add_table_row1">
+                        </tbody>
+                    </table>
+                </div>
+                <div style="display: flex; justify-content: end;">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="reset" class="btn btn-danger">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="EditModal" tabindex="-1" role="dialog" aria-labelledby="CancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display: flex;">
+                <h3 style="margin:auto; text-align: center; font-weight: 500;">Edit Employee</h3>
+            </div>
+            <div class="modal-body">
+                <form method="POST" asp-action="EditEmployee">
+                    <div class="col-12 input-box">
+                        <label>Name*</label>&nbsp;&nbsp;&nbsp;
+                        <input type="text" name="EmpName" required class="form-control" id="EmpName" />
+                    </div>
+                    <div class="col-12">
+                        <label>Gender*</label>&nbsp;&nbsp;&nbsp;
+                        <input type="radio" name="Gender" value="Male" required id="GMale" /> Male &nbsp;
+                        <input type="radio" name="Gender" value="Female" required id="GFemale" /> Female &nbsp;
+                        <input type="radio" name="Gender" value="Third Gender" required id="GThird" /> Third Gender
+                    </div>
+                    <div class="col-12 input-box">
+                        <label>DOB*</label>&nbsp;&nbsp;&nbsp;
+                        <input name="DobDate" type="date" class="form-control" max="@(DateTime.Now.ToString("yyyy-MM-dd"))" required id="Dob" />
+                    </div>
+                    <div class="col-12 input-box">
+                        <label>Salary</label>&nbsp;&nbsp;&nbsp;
+                        <input name="Salary" type="number" class="form-control" id="Salary" />
+                        <input name="Id" hidden id="emp_id" />
+                    </div>
+                    <br />
+                    <div class="form-group" style="display: flex; justify-content: space-between;">
+                        
+                        <button type="submit" class="btn btn-success">Update</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="editQualification();">Qualification</button>
+                        <button type="button" class="btn btn-danger" onclick="deleteEmp();">Delete</button>
+                        <button type="button" class="close btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                    <br />
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="EditQModal" tabindex="-1" role="dialog" aria-labelledby="CancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display: flex;">
+                <h3 style="margin:auto; text-align: center; font-weight: 500;" id="qualification_edit">Edit Qualification</h3>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; justify-content:center;" class="input-box">
+                    <div>
+                        <label>Qualification</label>&nbsp;&nbsp;&nbsp;
+                        <select name="Qualificaion" class="form-control" id="qualification2">
+                            <option value="-1" hidden>Select Qualification</option>
+                            @foreach (var item in qualifications)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    &nbsp;&nbsp;&nbsp;
+                    <div>
+                        <label>Marks*</label>&nbsp;&nbsp;&nbsp;
+                        <input type="number" class="form-control" id="marks2" />
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="insertQual(2);">Add</button>
+                </div>
+                <form method="POST" asp-action="EditQualification">
+                    <div class="col-12 input-box">
+                        <table id="qual_table2">
+                            <thead>
+                                <tr>
+                                    <th>QID</th>
+                                    <th>Qualification Name</th>
+                                    <th>Marks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="add_table_row2">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="display: flex; justify-content:space-between;">
+                        <button type="submit" class="btn btn-success">Update</button>
+                        <button type="button" class="close btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function insertQual(row_id) {
+        var qual_id = $("#qualification" + row_id).val();
+        var marks = $("#marks" + row_id).val();
+        if(qual_id == null || marks == '') {
+            alert('Select qualification and enter marks first');
+            return;
+        }
+
+        //Check if qualification exist
+        var $tr = $('#qual_table' + row_id + ' tr[data-id="' + qual_id + '"]');
+
+        if ($tr.length) {
+            alert("Qualification exists");
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            data:'id=' + qual_id,
+            url: '../Home/Qualification',
+            success: function(data){
+                add_row(qual_id, data, marks, 'add_table_row' + row_id);
+                document.getElementById('qualification' + row_id).value = '-1';
+                document.getElementById('marks' + row_id).value = '';
+            }
+        });
+    }
+
+    function add_row(id, name, mark, row_id) {
+        debugger;
+        var count = $('#' + row_id + ' tr').length + 1;
+        $('#' + row_id).append('<tr data-id="' + id + '">' +
+            '<td>' + id + '</td>' +
+            '<td>' + name + '</td>' + '<td>' + mark + 
+            '<input name="EQId[]" value="' + id + '" hidden><input name="Marks[]" value="' + mark + '" hidden></td></tr>'
+        );
+    }
+
+    function editModal(id) {
+        $.ajax({
+            type: 'POST',
+            url: '../Home/GetEmployee',
+            data: 'id=' + id,
+            success: function(data) {
+                const obj = JSON.parse(data);
+                document.getElementById('emp_id').value = obj["Id"];
+                document.getElementById('EmpName').value = obj["EmpName"];
+                document.getElementById('Dob').value = obj["Dob"];
+                document.getElementById('Salary').value = obj["Salary"];
+                if(obj["Gender"] == 'Male') {
+                    document.getElementById("GMale").checked = true;
+                }
+                else if(obj["Gender"] == 'Female') {
+                    document.getElementById("GFemale").checked = true;
+                }
+                else if (obj["Gender"] == 'Third Gender') {
+                    document.getElementById("GThird").checked = true;
+                }
+                $('#EditModal').modal('show');
+            }
+        });
+    }
+
+    function deleteEmp() {
+        if(confirm("Are you sure to delete this employee?")) {
+            var id = $("#emp_id").val();
+            $.ajax({
+                type: 'POST',
+                data: 'id=' + id,
+                url: '../Home/DeleteEmp',
+                success: function() {
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    function editQualification() {
+        var name = $("#EmpName").val();
+        var id = $("#emp_id").val();
+        $('#qualification_edit').text('Edit Qualification for ' + name);
+        $.ajax({
+            type: 'POST',
+            url: '../Home/GetQualification',
+            data: 'id=' + id,
+            success: function(data) {
+                debugger;
+                $('#add_table_row2').append(data);
+            }
+        });
+        $('#EditQModal').modal('show');
+    }
+</script>
